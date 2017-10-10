@@ -1,0 +1,74 @@
+body {
+  margin:0;
+  padding:0;
+}
+#redbox {
+  background-color:red;
+  top:50px;
+}
+#redbox, #bluebox {
+  width: 50px;
+  height: 50px;
+  position: absolute;
+}
+#bluebox {
+  background-color: blue;
+  left:0;
+}
+.pause {
+  width:600px;
+  height:300px;
+  text-align: center;
+  background-color: rgba(0,0,0,.7);
+  position: absolute;
+}
+.pause button {
+  margin-top:20%;
+}
+.nodisplay {
+  display:none;
+}
+#board {
+  width: 600px;
+  height: 300px;
+  border:1px solid black;
+  display:inline-block;
+  overflow:hidden;
+}
+.scoreboard {
+  height:300px;
+  margin-left:10px;
+  border:1px solid black;
+  text-align:center;
+  color:white;
+  background-color: grey;
+  display:inline-block;
+  vertical-align: top;
+}
+.scoreboard-item {
+  padding:50px;
+}
+#player {
+  width:60px;
+  height:60px;
+  background-color:green;
+  /*border-radius: 100%;*/
+  position: absolute;
+  left:350px;
+  top:200px;
+}
+
+.collided {
+  border: 3px solid yellow;
+}
+.npc {
+  position: absolute;
+  width:50px;
+  height:50px;
+
+}
+/*.npc::after{
+  display:block;
+  content:'test';
+  background-color:green;
+}*/
