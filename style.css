@@ -65,7 +65,21 @@ body {
   position: absolute;
   width:50px;
   height:50px;
-
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.bluefish {
+  background-image: url('./images/twofish.gif');
+}
+.greenfish {
+  background-image: url('./images/greenfish.gif');
+}
+.yellowfish {
+  background-image: url('./images/yellowfish.gif');
+}
+.seahorse {
+  background-image: url('./images/seahorse.gif');
 }
 /*.npc::after{
   display:block;
