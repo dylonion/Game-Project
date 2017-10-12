@@ -2,6 +2,9 @@ body {
   margin:0;
   padding:0;
 }
+h2 {
+  margin:50px;
+}
 #redbox {
   background-color:red;
   top:50px;
@@ -21,6 +24,19 @@ body {
   text-align: center;
   background-color: rgba(0,0,0,.7);
   position: absolute;
+  z-index: 1;
+  color:white;
+}
+.overlay button {
+  margin-right:10px;
+  border:none;
+  border-radius: 3px;
+  padding:10px;
+  font-family: sans-serif;
+  color:white;
+  font-size: large;
+  background-color: #85b6ff;
+  cursor: pointer;
 }
 .pause button {
   margin-top:20%;
@@ -34,6 +50,7 @@ body {
   border:1px solid black;
   display:inline-block;
   overflow:hidden;
+  background-color:#c1ffd7;
 }
 .scoreboard {
   height:300px;
@@ -51,7 +68,10 @@ body {
 #player {
   width:10px;
   height:10px;
-  background-color:green;
+  background-image: url('./images/greenfish.gif');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
   /*border-radius: 100%;*/
   position: absolute;
   left:350px;
@@ -80,6 +100,12 @@ body {
 }
 .seahorse {
   background-image: url('./images/seahorse.gif');
+}
+.flip {
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
 }
 /*.npc::after{
   display:block;

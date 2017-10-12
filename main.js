@@ -3,15 +3,15 @@ let bluebox = document.getElementById('bluebox')
 let board = {
   inPlay: true,
   spawnCount:0,
-  refreshRate: 35,
+  refreshRate: 50,
   npcs: [],
   score:0,
   maxSize:50,
   player: {
     x:350,
     y:200,
-    w:10,
-    height:10,
+    w:40,
+    height:40,
     selector:document.querySelector('#player'),
     keysDown: {
       87: false,//w
@@ -19,12 +19,13 @@ let board = {
       68:false,//d
       83:false//s
     },
-    vx: 1,
-    vy: 1,
-    restSpeed:1,
+    vx: .5,
+    vy: .5,
+    restSpeed:.5,
     grow: function(w,h,much){
-      this.w += w / 4;
-      this.height += h /4;
+      this.w += Math.floor(w / 6);
+      this.height += Math.floor(w / 6);
+      board.maxSize += Math.floor(w / 6);
       this.selector.style.width = this.w + 'px';
       this.selector.style.height = this.height + 'px';
       board.score += much /2;
@@ -42,6 +43,7 @@ let board = {
       }else{
         clearInterval(moveit);
         clearInterval(spawnOne);
+        document.querySelector('#resume').className = "";
         paused.setAttribute('class','pause overlay');
       }
     }
@@ -56,12 +58,12 @@ let board = {
   reset: function() {
     this.inPlay = true;
     let player = board.player;
-    player.w = 10;
-    player.height = 10;
+    player.w = 20;
+    player.height = 20;
     player.x = 350;
     player.x = 200;
     this.score = 0;
-    this.maxSize = 50;
+    this.maxSize = 100;
     for(let i=0;i<this.npcs.length;i++){
       this.npcs[i].selector.remove();
     }
@@ -85,22 +87,34 @@ let board = {
     }else{
       ranMax = board.maxSize;
     }
-    let ran = randNum(5,ranMax);
+    let ran = randNum(15,ranMax);
     let rann = randNum(1,300-ran);
     let opinions = {
       x: options.x || 0,
       y:options.y ||rann,
       size:options.size||ran,
-      style:options.style||'background-color: orange'
+      style:options.style||'yellowfish'
     };
     this.npcs.push(new Npc(opinions.x,opinions.y,opinions.size,opinions.size));
     this.npcs[this.npcs.length-1].htmlCreate(opinions.style);
   },
   initNPCS: function() {
-    let colors = ['red','blue','purple','#000'];
+    let colors = ['bluefish','yellowfish'];
     for(let i=0;i<10;i++){
-      let x = randNum(1,60) * 10;
-      this.spawnNPC({x: x, style:`background-color:${colors[randNum(1,4)-1]}`});
+      let x = randNum(1,100);
+      let xone = randNum(200,300);
+      x = x <=50 ? x : xone;
+      this.spawnNPC({x: x, style:colors[randNum(1,2)-1]});
+    }
+    for(let i=0;i<board.npcs.length;i++){
+      if(board.npcs[i].x < player.x + player.w &&
+         board.npcs[i].x + board.npcs[i].width > player.x &&
+         board.npcs[i].y < player.y + player.height &&
+         board.npcs[i].height + board.npcs[i].y > player.y)
+      {
+        board.npcs[i].x -= board.npcs[i].width;
+        board.npcs[i].y -= board.npcs[i].height;
+      }
     }
   },
   showScore: function() {
@@ -116,19 +130,20 @@ const Npc = function(x,y,width,height,selector){
   this.width = width;
   this.height = height;
   let bin = randNum(1,2);
-  let findspeed = this.height <= 10 ? 2 : this.height > 10 && this.height <=20 ? 1.5 : 1;
-  if(this.height >40){
-    findspeed = .5;
+  let findspeed = this.height <= 40 ? 1.5 : this.height > 40 && this.height <=90 ? 1 : 0.5;
+  if(this.height >100){
+    findspeed = .3;
   }
   console.log('width',width);
   console.log('findspeed',findspeed);
   this.movementX = (bin === 1 ? findspeed * -1 : findspeed);
   this.selector = selector ? selector : `npc${board.npcs.length}`;
-  this.htmlCreate = function(style){
+  this.htmlCreate = function(imageClass){
+    let flip = this.movementX < 0 ? 'flip' : '';
     let newNpc = document.createElement('div');
     newNpc.setAttribute('id',this.selector);
-    newNpc.setAttribute('class','npc')
-    newNpc.setAttribute('style',`width:${width}px;height:${height}px;left:${x}px;top:${y}px;${style}`);
+    newNpc.setAttribute('class',`npc ${imageClass} ${flip}`)
+    newNpc.setAttribute('style',`width:${width}px;height:${height}px;left:${x}px;top:${y}px;`);
     document.querySelector('#board').appendChild(newNpc);
     this.selector = document.getElementById(this.selector);
   }
@@ -159,7 +174,7 @@ const movePlayer = function(boundaryX,boundaryY) {
       }
       if(item === '87' || item === '83'){
         if(board.player.vy <= 5){
-          board.player.vy +=.1;
+          board.player.vy +=.05;
         }
       }
       switch(item){
@@ -223,10 +238,12 @@ const checkX = function(el,boundary){
   if(itemToChange.movementX > 0){
     if (!(itemToChange.x + itemToChange.width < boundary)) {
       itemToChange.movementX *= -1;
+      itemToChange.selector.className += ' flip';
     }
   }else{
     if(!(itemToChange.x > 0 )){
       itemToChange.movementX = Math.abs(itemToChange.movementX)
+      itemToChange.selector.className = itemToChange.selector.className.replace('flip','');
     }
   }
   itemToChange.x +=itemToChange.movementX;
@@ -286,6 +303,12 @@ document.querySelector('body').addEventListener('keydown', function(e) {
   // }
   if(e.which === 27){
     board.togglePause();
+  }
+  if(e.which === 65){
+    board.player.selector.className = '';
+  }
+  if(e.which === 68){
+    board.player.selector.className = 'flip';
   }
   for(item in board.player.keysDown){
     if(parseInt(item) === e.which){
