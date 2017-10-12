@@ -7,6 +7,7 @@ let board = {
   npcs: [],
   score:0,
   maxSize:50,
+  timeRemaining:120000,
   player: {
     x:350,
     y:200,
@@ -39,19 +40,24 @@ let board = {
       if(paused.className === "pause overlay"){
         moveit = setInterval(move,this.refreshRate);
         spawnOne = setInterval(checkSpawns,6000);
+        timer(0,true);
         paused.className = "pause overlay nodisplay";
       }else{
         clearInterval(moveit);
         clearInterval(spawnOne);
+        clearInterval(getTime);
         document.querySelector('#resume').className = "";
         paused.setAttribute('class','pause overlay');
       }
     }
   },
-  playerDie: function() {
+  playerDie: function(text) {
     clearInterval(moveit);
     clearInterval(spawnOne);
     this.inPlay = false;
+    if(text){
+      document.getElementById('endreason').innerHTML = text;
+    }
     document.getElementById('finalscore').innerHTML = this.score;
     document.querySelector('.gameover').className = "gameover overlay";
   },
@@ -64,6 +70,7 @@ let board = {
     player.x = 200;
     this.score = 0;
     this.maxSize = 100;
+    timer(2);
     for(let i=0;i<this.npcs.length;i++){
       this.npcs[i].selector.remove();
     }
@@ -77,8 +84,10 @@ let board = {
     changePosition(board.player);
     moveit = setInterval(move,this.refreshRate);
     spawnOne = setInterval(checkSpawns,randNum(1,5) * 1000)
+    timer(2);
     document.querySelector('.pause').className += " nodisplay";
     document.querySelector('.gameover').className += " nodisplay"
+    document.getElementById('endreason').innerHTML = '';
   },
   spawnNPC: function(options,guarantee) {
     let ranMax;
@@ -97,6 +106,10 @@ let board = {
     };
     this.npcs.push(new Npc(opinions.x,opinions.y,opinions.size,opinions.size));
     this.npcs[this.npcs.length-1].htmlCreate(opinions.style);
+    if(this.npcs[this.npcs.length-1].width >= 40){
+      this.npcs[this.npcs.length-1].width -= 10;
+      this.npcs[this.npcs.length-1].height -= 10;
+    }
   },
   initNPCS: function() {
     let colors = ['bluefish','yellowfish'];
@@ -339,15 +352,31 @@ document.querySelectorAll('.newGame').forEach(function(e){
 })
 board.initNPCS();
 const checkSpawns = function() {
-  board.checkSpawnsCount += 1;
-  let isGuarantee = false;
-  if(board.checkSpawnsCount % 3 === 0){
-    isGuarantee = true;
-  }
   if(board.npcs.length < 20){
-    board.spawnNPC({},isGuarantee);
-     console.log('spawnOne firing',board.npcs);
+    for(let i=board.npcs.length; i < 16; i++){
+      board.checkSpawnsCount += 1;
+      let isGuarantee = false;
+      if(board.checkSpawnsCount % 3 === 0){
+        isGuarantee = true;
+    }
+      board.spawnNPC({},isGuarantee);
+    }
   }
+}
+const timer = function(minutes,resume){
+  let min = minutes * 10000;
+  let d = Date.now() + min;
+  if(resume){
+    d = board.timeRemaining;
+  }
+  getTime = setInterval(function(){
+    if(d - Date.now() === 0){
+      board.playerDie(`Time's up!`);
+    }
+    let x = new Date(d - Date.now());
+    document.getElementById('time').innerHTML = `${x.getMinutes()} : ${x.getSeconds()}`;
+    board.timeRemaining = x;
+  },1000)
 }
 // let randomize = setInterval(function() {
 //   var random_boolean = Math.random() >= 0.5;

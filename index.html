@@ -10,9 +10,13 @@
   <div id="bluebox"></div> -->
   <div id="player"></div>
   <div class="pause overlay"><button class="nodisplay" id="resume">Resume</button><button class="newGame">New Game</button></div>
-  <div class="gameover overlay nodisplay"><h2>Game Over</h2><div>Your Score:<span id="finalscore">0</span></div><div><button class="newGame">New Game</button></div></div>
+  <div class="gameover overlay nodisplay"><h2>Game Over</h2><div id="endreason"></div><div>Your Score:<span id="finalscore">0</span></div><div><button class="newGame">New Game</button></div></div>
 </div>
 <div class="scoreboard">
+  <div class="scoreboard-item">
+    Time Remaining:
+    <div id="time"></div>
+  </div>
   <div class="scoreboard-item">
     Score:<div id="score">0</div>
   </div>
