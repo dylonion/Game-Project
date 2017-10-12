@@ -49,8 +49,8 @@ body {
   padding:50px;
 }
 #player {
-  width:60px;
-  height:60px;
+  width:10px;
+  height:10px;
   background-color:green;
   /*border-radius: 100%;*/
   position: absolute;
@@ -59,7 +59,7 @@ body {
 }
 
 .collided {
-  border: 3px solid yellow;
+  border: 1px solid yellow;
 }
 .npc {
   position: absolute;

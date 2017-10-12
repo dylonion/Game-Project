@@ -1,15 +1,17 @@
 let redbox = document.getElementById('redbox')
 let bluebox = document.getElementById('bluebox')
 let board = {
+  inPlay: true,
   spawnCount:0,
-  refreshRate: 25,
+  refreshRate: 35,
   npcs: [],
   score:0,
+  maxSize:50,
   player: {
     x:350,
     y:200,
-    w:60,
-    height:60,
+    w:10,
+    height:10,
     selector:document.querySelector('#player'),
     keysDown: {
       87: false,//w
@@ -31,30 +33,35 @@ let board = {
     }
   },
   togglePause: function() {
-    let paused = document.querySelector('.pause');
-    if(paused.className === "pause overlay"){
-      moveit = setInterval(move,this.refreshRate);
-      spawnOne = setInterval(checkSpawns,6000);
-      paused.className = "pause overlay nodisplay";
-    }else{
-      clearInterval(moveit);
-      clearInterval(spawnOne);
-      paused.setAttribute('class','pause overlay');
+    if(this.inPlay === true){
+      let paused = document.querySelector('.pause');
+      if(paused.className === "pause overlay"){
+        moveit = setInterval(move,this.refreshRate);
+        spawnOne = setInterval(checkSpawns,6000);
+        paused.className = "pause overlay nodisplay";
+      }else{
+        clearInterval(moveit);
+        clearInterval(spawnOne);
+        paused.setAttribute('class','pause overlay');
+      }
     }
   },
   playerDie: function() {
     clearInterval(moveit);
     clearInterval(spawnOne);
+    this.inPlay = false;
     document.getElementById('finalscore').innerHTML = this.score;
     document.querySelector('.gameover').className = "gameover overlay";
   },
   reset: function() {
+    this.inPlay = true;
     let player = board.player;
-    player.w = 60;
-    player.height = 60;
+    player.w = 10;
+    player.height = 10;
     player.x = 350;
     player.x = 200;
     this.score = 0;
+    this.maxSize = 50;
     for(let i=0;i<this.npcs.length;i++){
       this.npcs[i].selector.remove();
     }
@@ -63,24 +70,37 @@ let board = {
     this.showScore();
     this.npcs = [];
     this.initNPCS();
-    this.refreshRate = 25;
+    this.refreshRate = 35;
+    this.checkSpawnsCount = 0;
     changePosition(board.player);
     moveit = setInterval(move,this.refreshRate);
+    spawnOne = setInterval(checkSpawns,randNum(1,5) * 1000)
     document.querySelector('.pause').className += " nodisplay";
     document.querySelector('.gameover').className += " nodisplay"
   },
-  spawnNPC: function() {
-    this.npcs.push(new Npc(-50,20,20,20));
-    this.npcs[this.npcs.length-1].htmlCreate('background-color:orange');
+  spawnNPC: function(options,guarantee) {
+    let ranMax;
+    if(guarantee&&guarantee===true){
+      ranMax = this.player.height;
+    }else{
+      ranMax = board.maxSize;
+    }
+    let ran = randNum(5,ranMax);
+    let rann = randNum(1,300-ran);
+    let opinions = {
+      x: options.x || 0,
+      y:options.y ||rann,
+      size:options.size||ran,
+      style:options.style||'background-color: orange'
+    };
+    this.npcs.push(new Npc(opinions.x,opinions.y,opinions.size,opinions.size));
+    this.npcs[this.npcs.length-1].htmlCreate(opinions.style);
   },
   initNPCS: function() {
-    let colors = ['red','blue','purple','#000']
-    let count = 0;
-    for(let i=0;i<200;i+=50){
-      let ran = randNum(10,50);
-      this.npcs.push(new Npc(0,i,ran,ran));
-      this.npcs[this.npcs.length-1].htmlCreate('background-color:'+colors[count]);
-      count++;
+    let colors = ['red','blue','purple','#000'];
+    for(let i=0;i<10;i++){
+      let x = randNum(1,60) * 10;
+      this.spawnNPC({x: x, style:`background-color:${colors[randNum(1,4)-1]}`});
     }
   },
   showScore: function() {
@@ -95,6 +115,14 @@ const Npc = function(x,y,width,height,selector){
   this.y = y;
   this.width = width;
   this.height = height;
+  let bin = randNum(1,2);
+  let findspeed = this.height <= 10 ? 2 : this.height > 10 && this.height <=20 ? 1.5 : 1;
+  if(this.height >40){
+    findspeed = .5;
+  }
+  console.log('width',width);
+  console.log('findspeed',findspeed);
+  this.movementX = (bin === 1 ? findspeed * -1 : findspeed);
   this.selector = selector ? selector : `npc${board.npcs.length}`;
   this.htmlCreate = function(style){
     let newNpc = document.createElement('div');
@@ -127,13 +155,11 @@ const movePlayer = function(boundaryX,boundaryY) {
       if(item === '65' || item === '68'){
         if(board.player.vx <= 5){
           board.player.vx +=.1;
-          console.log('increasing velocity',board.player.vx)
         }
       }
       if(item === '87' || item === '83'){
         if(board.player.vy <= 5){
           board.player.vy +=.1;
-          console.log('increasing velocity',board.player.vx)
         }
       }
       switch(item){
@@ -184,6 +210,7 @@ const changePosition = function(el) {
             player.grow(board.npcs[i].width,board.npcs[i].height,board.npcs[i].area());
             board.npcs[i].kill();
           }else{
+            board.npcs[i].selector.className += ' collided';
             board.playerDie();
           }
         }
@@ -193,17 +220,13 @@ const changePosition = function(el) {
 
 const checkX = function(el,boundary){
   let itemToChange = el;
-  if(itemToChange.movementX === 1){
-    if ((itemToChange.x + itemToChange.width < boundary)) {
-    itemToChange.movementX = 1;
-    }else{
-      itemToChange.movementX = -1;
+  if(itemToChange.movementX > 0){
+    if (!(itemToChange.x + itemToChange.width < boundary)) {
+      itemToChange.movementX *= -1;
     }
   }else{
-    if(itemToChange.x >= 0 ){
-      itemToChange.movementX = -1;
-    }else{
-      itemToChange.movementX = 1;
+    if(!(itemToChange.x > 0 )){
+      itemToChange.movementX = Math.abs(itemToChange.movementX)
     }
   }
   itemToChange.x +=itemToChange.movementX;
@@ -293,8 +316,13 @@ document.querySelectorAll('.newGame').forEach(function(e){
 })
 board.initNPCS();
 const checkSpawns = function() {
-  if(board.npcs.length < 15){
-    board.spawnNPC();
+  board.checkSpawnsCount += 1;
+  let isGuarantee = false;
+  if(board.checkSpawnsCount % 3 === 0){
+    isGuarantee = true;
+  }
+  if(board.npcs.length < 20){
+    board.spawnNPC({},isGuarantee);
      console.log('spawnOne firing',board.npcs);
   }
 }
